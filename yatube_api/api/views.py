@@ -18,12 +18,6 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
-    def get_queryset(self):
-        post_id = self.kwargs.get("post_id")
-        post = get_object_or_404(Post, pk=post_id)
-        queryset = post.comments.all()
-        return queryset
-
     def perform_update(self, serializer):
         if serializer.instance.author != self.request.user:
             raise PermissionDenied('Изменение контента запрещено!')
@@ -52,6 +46,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         serializer.save(post=post, author=self.request.user)
 
+    def get_queryset(self):
+        post_id = self.kwargs.get("post_id")
+        post = get_object_or_404(Post, pk=post_id)
+        queryset = post.comments.all()
+        return queryset
+
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
@@ -71,3 +71,20 @@ class FollowViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = user.follower.all()
         return queryset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
