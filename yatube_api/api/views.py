@@ -14,20 +14,14 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+    permission_classes = (permissions.IsAuthenticated, IsAuthorOrReadOnlyPermission, )
 
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение контента запрещено!')
-        super(PostViewSet, self).perform_update(serializer)
+
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_destroy(self, instance):
-        if self.request.user != instance.author:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super(PostViewSet, self).perform_destroy(instance)
+
 
 
 class CommentViewSet(viewsets.ModelViewSet):
