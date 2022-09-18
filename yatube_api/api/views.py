@@ -72,19 +72,5 @@ class FollowViewSet(viewsets.ModelViewSet):
         queryset = user.follower.all()
         return queryset
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
