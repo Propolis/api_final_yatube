@@ -3,8 +3,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 
-from posts.models import Post, Group, Comment
-from api.permissions import (IsAuthorOrReadOnlyPermission,)
+from posts.models import Post, Group
+from api.permissions import IsAuthorOrReadOnlyPermission
 from api.serializers import (
     CommentSerializer, PostSerializer, GroupSerializer, FollowSerializer
 )
@@ -14,18 +14,24 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (permissions.IsAuthenticated, IsAuthorOrReadOnlyPermission, )
+    permission_classes = (IsAuthorOrReadOnlyPermission,)
 
-
+    def perform_update(self, serializer):
+        if serializer.instance.author != self.request.user:
+            raise PermissionDenied('Изменение контента запрещено!')
+        super(PostViewSet, self).perform_update(serializer)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-
+    def perform_destroy(self, instance):
+        if self.request.user != instance.author:
+            raise PermissionDenied('Изменение чужого контента запрещено!')
+        super(PostViewSet, self).perform_destroy(instance)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
+    # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
@@ -41,8 +47,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         post_id = self.kwargs.get("post_id")
         post = get_object_or_404(Post, pk=post_id)
-        queryset = post.comments.all()
-        return queryset
+        return post.comments.all()
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -60,8 +65,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = user.follower.all()
-        return queryset
+        return user.follower.all()
 
     def perform_create(self, serializer):
         serializer.save(

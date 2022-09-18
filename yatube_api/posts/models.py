@@ -18,7 +18,7 @@ class Post(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     group = models.ForeignKey(
         Group, on_delete=models.CASCADE,
-        related_name="posts", blank=True, null=True
+        related_name='posts', blank=True, null=True
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='posts')
@@ -51,5 +51,5 @@ class Follow(models.Model):
         User,
         verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name="following",
+        related_name='following',
     )
